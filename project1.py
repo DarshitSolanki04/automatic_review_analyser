@@ -33,7 +33,9 @@ def hinge_loss_single(feature_vector, label, theta, theta_0):
     Returns: A real number representing the hinge loss associated with the
     given data point and parameters.
     """
-    # Your code here
+    theta_transpose = np.transpose(theta)
+    classifier = label * (np.matmul(theta_transpose, feature_vector) + theta_0)
+    return max(0, 1 - classifier)
     raise NotImplementedError
 
 
@@ -55,7 +57,12 @@ def hinge_loss_full(feature_matrix, labels, theta, theta_0):
     given dataset and parameters. This number should be the average hinge
     loss across all of the points in the feature matrix.
     """
-    # Your code here
+    no_of_examples = labels.size
+    classifier = 1 - np.multiply(labels, (np.matmul(feature_matrix, theta) + theta_0))
+    max_fun = lambda x: max(0, x)
+    hinge = np.array([max_fun(i) for i in classifier])
+    average_loss = np.sum(hinge) / no_of_examples
+    return average_loss
     raise NotImplementedError
 
 
