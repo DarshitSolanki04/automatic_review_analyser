@@ -193,3 +193,6 @@ __pycache__/
 /out
 /target
 ignore/
+trial.py
+trial2.py
+trial3.py

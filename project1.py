@@ -88,7 +88,16 @@ def perceptron_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    current_theta_transpose = np.transpose(current_theta)
+    y_hat = np.matmul(current_theta_transpose, feature_vector) + current_theta_0
+    classifier = y_hat * label
+    if classifier <= 0:
+        theta = current_theta + label*feature_vector
+        theta_0 = current_theta_0 + label
+    else:
+        theta = current_theta
+        theta_0 = current_theta_0
+    return (theta, theta_0)
     raise NotImplementedError
 
 
@@ -117,11 +126,15 @@ def perceptron(feature_matrix, labels, T):
     theta_0, the offset classification parameter, after T iterations through
     the feature matrix.
     """
-    # Your code here
+    dim = feature_matrix.shape[1]
+    current_theta = np.zeros(dim)
+    current_theta_0 = 0
     for t in range(T):
         for i in get_order(feature_matrix.shape[0]):
-            # Your code here
-            pass
+            update = perceptron_single_step_update(feature_matrix[i], labels[i], current_theta, current_theta_0)
+            current_theta = update[0]
+            current_theta_0 = update[1]
+    return (current_theta, current_theta_0)
     raise NotImplementedError
 
 
@@ -154,7 +167,22 @@ def average_perceptron(feature_matrix, labels, T):
     Hint: It is difficult to keep a running average; however, it is simple to
     find a sum and divide.
     """
-    # Your code here
+    dim = feature_matrix.shape[1]
+    current_theta = np.zeros(dim)
+    current_theta_0 = 0
+    total_theta = np.zeros(dim)
+    total_theta_0 = 0
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            update = perceptron_single_step_update(feature_matrix[i], labels[i], current_theta, current_theta_0)
+            current_theta = update[0]
+            current_theta_0 = update[1]
+
+            total_theta += current_theta
+            total_theta_0 += current_theta_0
+    avg_theta = total_theta / (feature_matrix.shape[0] * T)
+    avg_theta_0 = total_theta_0 / (feature_matrix.shape[0] * T)
+    return (avg_theta, avg_theta_0)
     raise NotImplementedError
 
 
@@ -184,7 +212,18 @@ def pegasos_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    current_theta_transpose = np.transpose(current_theta)
+    y_hat = np.matmul(current_theta_transpose, feature_vector) + current_theta_0
+    classifier = y_hat * label
+    if abs(classifier) <= 1.000001:
+        classifier = 1
+    if classifier <= 1:
+        theta = (1 - eta*L) * current_theta + eta * label * feature_vector
+        theta_0 = current_theta_0 + eta * label
+    else:
+        theta = (1 - eta*L) * current_theta
+        theta_0 = current_theta_0
+    return (theta, theta_0)
     raise NotImplementedError
 
 
@@ -217,7 +256,18 @@ def pegasos(feature_matrix, labels, T, L):
     number with the value of the theta_0, the offset classification
     parameter, found after T iterations through the feature matrix.
     """
-    # Your code here
+    dim = feature_matrix.shape[1]
+    current_theta = np.zeros(dim)
+    current_theta_0 = 0
+    cnt = 0
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            cnt += 1
+            eta = 1 / np.sqrt(cnt)
+            update = pegasos_single_step_update(feature_matrix[i], labels[i], L, eta, current_theta, current_theta_0)
+            current_theta = update[0]
+            current_theta_0 = update[1]
+    return (current_theta, current_theta_0)
     raise NotImplementedError
 
 # Part II
