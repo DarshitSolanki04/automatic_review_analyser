@@ -2,6 +2,7 @@ from string import punctuation, digits
 import numpy as np
 import random
 
+
 # Part I
 
 
@@ -55,7 +56,7 @@ def hinge_loss_full(feature_matrix, labels, theta, theta_0):
 
     Returns: A real number representing the hinge loss associated with the
     given dataset and parameters. This number should be the average hinge
-    loss across all of the points in the feature matrix.
+    loss across all the points in the feature matrix.
     """
     no_of_examples = labels.size
     classifier = 1 - np.multiply(labels, (np.matmul(feature_matrix, theta) + theta_0))
@@ -91,13 +92,13 @@ def perceptron_single_step_update(
     current_theta_transpose = np.transpose(current_theta)
     y_hat = np.matmul(current_theta_transpose, feature_vector) + current_theta_0
     classifier = y_hat * label
-    if classifier <= 0:
-        theta = current_theta + label*feature_vector
+    if classifier <= 0.000001:
+        theta = current_theta + label * feature_vector
         theta_0 = current_theta_0 + label
     else:
         theta = current_theta
         theta_0 = current_theta_0
-    return (theta, theta_0)
+    return theta, theta_0
     raise NotImplementedError
 
 
@@ -108,7 +109,7 @@ def perceptron(feature_matrix, labels, T):
     stopping early.
 
     NOTE: Please use the previously implemented functions when applicable.
-    Do not copy paste code from previous parts.
+    Do not copy and paste code from previous parts.
 
     NOTE: Iterate the data matrix by the orders returned by get_order(feature_matrix.shape[0])
 
@@ -134,7 +135,7 @@ def perceptron(feature_matrix, labels, T):
             update = perceptron_single_step_update(feature_matrix[i], labels[i], current_theta, current_theta_0)
             current_theta = update[0]
             current_theta_0 = update[1]
-    return (current_theta, current_theta_0)
+    return current_theta, current_theta_0
     raise NotImplementedError
 
 
@@ -145,7 +146,7 @@ def average_perceptron(feature_matrix, labels, T):
     stopping early.
 
     NOTE: Please use the previously implemented functions when applicable.
-    Do not copy paste code from previous parts.
+    Do not copy and paste code from previous parts.
 
     NOTE: Iterate the data matrix by the orders returned by get_order(feature_matrix.shape[0])
 
@@ -182,7 +183,7 @@ def average_perceptron(feature_matrix, labels, T):
             total_theta_0 += current_theta_0
     avg_theta = total_theta / (feature_matrix.shape[0] * T)
     avg_theta_0 = total_theta_0 / (feature_matrix.shape[0] * T)
-    return (avg_theta, avg_theta_0)
+    return avg_theta, avg_theta_0
     raise NotImplementedError
 
 
@@ -200,7 +201,7 @@ def pegasos_single_step_update(
     Args:
         feature_vector - A numpy array describing a single data point.
         label - The correct classification of the feature vector.
-        L - The lamba value being used to update the parameters.
+        L - The lambda value being used to update the parameters.
         eta - Learning rate to update parameters.
         current_theta - The current theta being used by the Pegasos
             algorithm before this update.
@@ -218,12 +219,12 @@ def pegasos_single_step_update(
     if abs(classifier) <= 1.000001:
         classifier = 1
     if classifier <= 1:
-        theta = (1 - eta*L) * current_theta + eta * label * feature_vector
+        theta = (1 - eta * L) * current_theta + eta * label * feature_vector
         theta_0 = current_theta_0 + eta * label
     else:
-        theta = (1 - eta*L) * current_theta
+        theta = (1 - eta * L) * current_theta
         theta_0 = current_theta_0
-    return (theta, theta_0)
+    return theta, theta_0
     raise NotImplementedError
 
 
@@ -238,7 +239,7 @@ def pegasos(feature_matrix, labels, T, L):
     and nT inclusive).
 
     NOTE: Please use the previously implemented functions when applicable.
-    Do not copy paste code from previous parts.
+    Do not copy and paste code from previous parts.
 
     Args:
         feature_matrix - A numpy matrix describing the given data. Each row
@@ -247,7 +248,7 @@ def pegasos(feature_matrix, labels, T, L):
             correct classification of the kth row of the feature matrix.
         T - An integer indicating how many times the algorithm
             should iterate through the feature matrix.
-        L - The lamba value being used to update the Pegasos
+        L - The lambda value being used to update the Pegasos
             algorithm parameters.
 
     Returns: A tuple where the first element is a numpy array with the value of
@@ -267,8 +268,9 @@ def pegasos(feature_matrix, labels, T, L):
             update = pegasos_single_step_update(feature_matrix[i], labels[i], L, eta, current_theta, current_theta_0)
             current_theta = update[0]
             current_theta_0 = update[1]
-    return (current_theta, current_theta_0)
+    return current_theta, current_theta_0
     raise NotImplementedError
+
 
 # Part II
 
@@ -281,7 +283,6 @@ def classify(feature_matrix, theta, theta_0):
     Args:
         feature_matrix - A numpy matrix describing the given data. Each row
             represents a single data point.
-                theta - A numpy array describing the linear classifier.
         theta - A numpy array describing the linear classifier.
         theta_0 - A real valued number representing the offset parameter.
 
@@ -290,7 +291,13 @@ def classify(feature_matrix, theta, theta_0):
     given theta and theta_0. If a prediction is GREATER THAN zero, it should
     be considered a positive classification.
     """
-    # Your code here
+    y_hat = np.matmul(feature_matrix, theta) + theta_0
+    for i in range(y_hat.size):
+        if y_hat[i] > 0.000001:
+            y_hat[i] = 1
+        else:
+            y_hat[i] = -1
+    return y_hat
     raise NotImplementedError
 
 
@@ -326,7 +333,14 @@ def classifier_accuracy(
     trained classifier on the training data and the second element is the
     accuracy of the trained classifier on the validation data.
     """
-    # Your code here
+    parameters = classifier(train_feature_matrix, train_labels, **kwargs)
+
+    predictions = classify(train_feature_matrix, parameters[0], parameters[1])
+    train_accuracy = accuracy(predictions, train_labels)
+
+    validation_predictions = classify(val_feature_matrix, parameters[0], parameters[1])
+    validation_accuracy = accuracy(validation_predictions, val_labels)
+    return train_accuracy, validation_accuracy
     raise NotImplementedError
 
 
@@ -351,7 +365,7 @@ def bag_of_words(texts):
     Feel free to change this code as guided by Problem 9
     """
     # Your code here
-    dictionary = {} # maps word to unique index
+    dictionary = {}  # maps word to unique index
     for text in texts:
         word_list = extract_words(text)
         for word in word_list:
