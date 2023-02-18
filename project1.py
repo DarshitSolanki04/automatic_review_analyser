@@ -364,15 +364,19 @@ def bag_of_words(texts):
 
     Feel free to change this code as guided by Problem 9
     """
-    # Your code here
+    with open('stopwords.txt') as f:
+        stopwords = f.readlines()
+    final_stopwords = []
+    for sub in stopwords:
+        final_stopwords.append(sub.replace("\n", ""))
     dictionary = {}  # maps word to unique index
     for text in texts:
         word_list = extract_words(text)
         for word in word_list:
-            if word not in dictionary:
-                dictionary[word] = len(dictionary)
+            if word not in final_stopwords:
+                if word not in dictionary:
+                    dictionary[word] = len(dictionary)
     return dictionary
-
 
 def extract_bow_feature_vectors(reviews, dictionary):
     """
@@ -384,8 +388,6 @@ def extract_bow_feature_vectors(reviews, dictionary):
 
     Feel free to change this code as guided by Problem 9
     """
-    # Your code here
-
     num_reviews = len(reviews)
     feature_matrix = np.zeros([num_reviews, len(dictionary)])
 
@@ -393,7 +395,7 @@ def extract_bow_feature_vectors(reviews, dictionary):
         word_list = extract_words(text)
         for word in word_list:
             if word in dictionary:
-                feature_matrix[i, dictionary[word]] = 1
+                feature_matrix[i, dictionary[word]] += 1
     return feature_matrix
 
 
